@@ -14,28 +14,7 @@ const workSchema = new mongoose.Schema(
             trim: true,
             default: "My Workspace",
         },
-        path: {
-            type: String,
-            index: true,
-        },
         icon: { type: String },
-        shareType: {
-            type: String,
-            enum: ["private", "public", "share_link"],
-            default: "private",
-            index: true,
-        },
-        shareLink: {
-            type: String,
-            unique: true,
-            sparse: true,
-        },
-
-        isDeleted: {
-            type: Boolean,
-            default: false,
-            index: true,
-        },
     },
     { timestamps: true }
 );
