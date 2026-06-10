@@ -6,9 +6,6 @@ import cors from "cors"
 import http from "http"
 
 import { Server } from "socket.io";
-// import { setupNoteSocket } from "./modules/note/service/socket.js";
-// import { setupWorkspaceSocket } from "./modules/workspace/service/socket.js"
-// import { setupFolderSocket} from "./modules/folder/service/socket.js"
 import { socketAuth } from "./middleware/Authorization.js";
 
 dotenv.config();
@@ -19,7 +16,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: 'http://localhost:5173',
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "DELETE", "PATCH"],
         credentials: true
     }
 });
@@ -33,9 +30,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 io.use(socketAuth);
-// setupNoteSocket(io);
-// setupWorkspaceSocket(io);
-// setupFolderSocket(io);
 
 
 async function connectDB(){
