@@ -14,33 +14,29 @@ const taskSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
-        folderId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Folder",
-            default: null,
-            index: true,
-        },
         title: { type: String, required: true, trim: true },
         description: { type: String, default: "", trim: true },
-        noteIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Note" }],
-        taskIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
         status: {
             type: String,
-            enum: ["To do", "In process", "Done"],
+            enum: ["To do", "In progress", "Completed"],
             default: "To do",
             index: true,
         },
-        icon: { type: String },
-        startAt: { type: Date, default: Date.now() },
-        endAt: { type: Date, default: Date.now() },
-        order: { type: Number, default: 0 },
-        access: {
+        priority: {
             type: String,
-            enum: ["OWNER_ONLY", "TEAM_EDIT", "MEMBER_EDIT"],
-            default: null,
+            enum: ["High", "Medium", "Low"],
+            default: "Medium",
+            index: true,
         },
-        path: { type: String, index: true },
-        isDeleted: { type: Boolean, default: false, index: true },
+        icon: { type: String },
+        startAt: {
+            type: Date,
+            default: () => new Date()
+        },
+        endAt: {
+            type: Date,
+            default: () => new Date(Date.now() + 24 * 60 * 60 * 1000)
+        },
     },
     { timestamps: true }
 );
