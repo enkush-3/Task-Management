@@ -6,7 +6,6 @@ import MemberModel from "../../../members/model.js";
 
 import mongoose from "mongoose";
 
-// 1. GET all workspace
 export async function getAllWorkspace(req, res) {
     try {
         const userId = req.user.userId;
