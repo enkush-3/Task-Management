@@ -1,68 +1,50 @@
 import WorkModel from "../../workspace/model.js";
 import Task from "../model.js";
-import MemberModel from "../../members/model.js";
 
 export async function updateTask(req, res) {
     try {
         const { userId } = req.user;
-        const { wokrspaceid } = req.query;
+        const { workspaceId } = req.query;
         const { taskId } = req.params;
         const updateData = req.body;
 
-        const workspace = await WorkModel.findOne({
-            _id: wokrspaceid,
-            isDeleted: false,
-        });
-
-        if (!workspace) {
+        if (!taskId || !workspaceId) {
             return res.status(400).json({
-                message: "Workspace not found",
+                message: "Missing taskId or workspaceId",
             });
         }
 
-        if (!workspace.ownerId.equals(userId)) {
-            const member = MemberModel.findOne({
-                wokrspaceid: wokrspaceid,
-                userId: userId,
-            });
-
-            if (!member) {
-                return res.status(400).json({
-                    message: "Member not found",
-                });
-            }
-
-            if (member.permission !== "edit") {
-                return res.status(400).json({
-                    message: "Member can't edited",
-                });
-            }
-        }
-
-        const task = await Task.findOneAndUpdate(
+        const updatedTask = await Task.findOneAndUpdate(
             {
                 _id: taskId,
-                isDeleted: false,
+                createdBy: userId,
             },
             {
-                $set: { updateData },
-                $inc: {
-                    __v: 0.1,
+                $set: {
+                    ...updateData,
+                    updatedAt: new Date(),
                 },
             },
             {
-                new: true,
+                returnDocument: 'after',
                 runValidators: true,
             }
         );
 
+        if (!updatedTask) {
+            return res.status(404).json({
+                message: "Task not found or already deleted",
+            });
+        }
+
         return res.status(200).json({
-            data: task,
+            message: "Task updated successfully",
+            data: updatedTask,
         });
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            message: "Error getting note",
+            message: "Error updating task",
             error: error.message,
         });
     }
