@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            // Энд token шалгах эсвэл user info авах API дуудаж болно
             setUser({ token });
         }
         setLoading(false);
