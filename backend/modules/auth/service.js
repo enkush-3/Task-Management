@@ -1,7 +1,7 @@
 import { User } from "./model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { v4 as uuidv4 } from "uuid";
+import mongoose from "mongoose";
 
 export async function Login(req, res) {
     const { loginId, password } = req.body;
@@ -64,10 +64,7 @@ export async function Register(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const id = uuidv4();
-
     const newUser = new User({
-        _id: id,
         fullname,
         username,
         email,
