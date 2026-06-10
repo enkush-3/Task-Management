@@ -1,84 +1,35 @@
-import WorkModel from "../../model.js";
-
-export async function softDeleteWorkspace(req, res) {
-    try {
-        const userId = req.user.userId;
-        const { workspaceId } = req.params;
-
-        const workspace = await WorkModel.findOneAndUpdate(
-            {
-                _id: workspaceId,
-                ownerId: userId,
-                isDeleted: false,
-            },
-            {
-                $set: {
-                    isDelete: true,
-                },
-            },
-            {
-                new: true,
-                runValidators: true,
-            }
-        );
-        if (!workspace) {
-            return res.status(404).json({ message: "Workspace not found" });
-        }
-
-        const io = req.app.get("io");
-
-        if (io) {
-            io.to(workspaceId.toString()).emit("workspace", {
-                workspaceId,
-                updateData: workspace,
-            });
-        }
-
-        return res.json({
-            data: workspace,
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            mesage: "Server error",
-            error: error.message,
-        });
-    }
-}
+import WorkModel from "../model.js";
+import Task from "../../task/model.js";
 
 export async function hardDeleteWorkspace(req, res) {
     try {
         const userId = req.user.userId;
         const { workspaceId } = req.params;
-
-        const workspace = await WorkModel.findOneAndDelete({
+        const workspace = await WorkModel.findOne({
             _id: workspaceId,
             ownerId: userId,
-            isDeleted: true,
         });
 
         if (!workspace) {
-            return res.status(404).json({ message: "Workspace not found" });
-        }
-
-        const io = req.app.get("io");
-
-        if (io) {
-            io.to(workspaceId.toString()).emit("workspace", {
-                workspaceId,
-                updateData: workspace,
+            return res.status(404).json({ 
+                success: false,
+                message: "Workspace not found" 
             });
         }
 
+        await Task.deleteMany({ workspaceId: workspaceId });
+        await WorkModel.findByIdAndDelete(workspaceId);
+
         return res.json({
+            success: true,
+            message: "Workspace амжилттай устгагдлаа",
             data: workspace,
         });
     } catch (error) {
-        console.log(error);
+        console.error("hardDeleteWorkspace error:", error);
         res.status(500).json({
             success: false,
-            mesage: "Server error",
+            message: "Server error",
             error: error.message,
         });
     }

@@ -1,8 +1,5 @@
-import WorkModel from "../../model.js";
-import Folder from "../../../folder/model.js";
-import Note from "../../../note/model.js";
-import Task from "../../../task/model.js";
-import MemberModel from "../../../members/model.js";
+import WorkModel from "../model.js";
+import Task from "../../task/model.js";
 
 import mongoose from "mongoose";
 
@@ -10,191 +7,81 @@ export async function getAllWorkspace(req, res) {
     try {
         const userId = req.user.userId;
 
-        const allWorkspaces = await WorkModel.aggregate([
-            {
-                $match: {
-                    isDeleted: false,
-                },
-            },
-            {
-                $lookup: {
-                    from: "members",
-                    localField: "_id",
-                    foreignField: "workspaceId",
-                    as: "members",
-                },
-            },
-            {
-                $match: {
-                    $or: [
-                        { ownerId: new mongoose.Types.ObjectId(userId) },
-                        {
-                            "members.userId": new mongoose.Types.ObjectId(
-                                userId
-                            ),
-                        },
-                    ],
-                },
-            },
-            {
-                $project: {
-                    path: 0,
-                },
-            },
-        ]);
+        const ownedWorkspaces = await WorkModel.find({
+            ownerId: userId,
+        });
 
         return res.json({
             success: true,
-            data: allWorkspaces,
+            data: ownedWorkspaces,
         });
     } catch (error) {
-        console.log(error);
+        console.error('Workspace авахад алдаа:', error);
         res.status(500).json({
             success: false,
-            mesage: "Server error",
+            message: "Server error",
             error: error.message,
         });
     }
 }
 
-// 2. GET one workspace
-export async function getWorkspace(req, res) {
-    try {
-        const userId = req.user.userId;
-        const { workspaceId } = req.params;
-
-        const workspace = await WorkModel.findOne({
-            _id: workspaceId,
-            isDeleted: false,
-        }).select("-path");
-
-        if (!workspace) {
-            return res.status(404).json({ message: "Workspace not found" });
-        }
-        if (workspace.shareType !== "public") {
-            return res.status(404).json({message: "Invalid Workspace",});
-        }
-
-        if (workspace.ownerId.equals(userId)) {
-            return res.json({
-                success: true,
-                data: workspace,
-                role: "owner",
-            });
-        }
-
-        const member = await MemberModel.findOne({
-            workspaceId: workspaceId,
-            userId: userId,
-        });
-        if (!member) {
-            return res.json({
-                success: false,
-                message: "Access denied",
-            });
-        }
-
-        return res.json({
-            success: true,
-            data: workspace,
-            role: member.permission,
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            mesage: "Server error",
-            error: error.message,
-        });
-    }
-}
-
-// Get Lazy Workspace
 export async function getLazyWorkspace(req, res) {
     try {
-        const { workspaceId } = req.params;
         const userId = req.user.userId;
+        const { workspaceId } = req.params;
+        const { 
+            page = 1, 
+            limit = 10, 
+            sortBy = 'newest',
+            priority,
+            status,
+            category,
+            search 
+        } = req.query;
 
-        const workspace = await WorkModel.findOne({
-            _id: workspaceId,
-            isDeleted: false,
-        }).select("-path");
+        const filter = {
+            createdBy: userId,
+            workspaceId,
+        };
 
-        if (!workspace) {
-            return res.status(404).json({ message: "Workspace not found" });
+        if (priority && priority !== 'all') filter.priority = priority;
+        if (status && status !== 'all') filter.status = status;
+        
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
         }
 
-        if (workspace.shareType !== "public") {
-            return res.status(404).json({message: "Invalid Workspace",});
+        let sort = {};
+        switch (sortBy) {
+            case 'newest': sort = { createdAt: -1 }; break;
+            case 'oldest': sort = { createdAt: 1 }; break;
+            case 'priority': sort = { priority: 1 }; break;
+            case 'deadline': sort = { endAt: 1 }; break;
+            default: sort = { order: 1, createdAt: -1 };
         }
+        const pageNum = Math.max(1, parseInt(page, 10));
+        const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
+        const skip = (pageNum - 1) * limitNum;
 
-        const [folder, note, task] = await Promise.all([
-            Folder.find({
-                workspaceId: workspaceId,
-                parentId: null,
-                isDeleted: false,
-            })
-                .lean()
-                .select("-path -ownerId")
-                .sort({ order: 1 }),
-            Note.find({
-                workspaceId: workspaceId,
-                folderId: null,
-                isDeleted: false,
-            })
-                .lean()
-                .select("-path -ownerId")
-                .sort({ order: 1 }),
-            Task.find({
-                workspaceId: workspaceId,
-                folderId: null,
-                isDeleted: false,
-            })
-                .lean()
-                .select("-path -ownerId")
-                .sort({ order: 1 }),
+        const [tasks, total] = await Promise.all([
+            Task.find(filter).lean().sort(sort).skip(skip).limit(limitNum),
+            Task.countDocuments(filter)
         ]);
 
-        if (workspace.ownerId.equals(userId)) {
-            return res.json({
-                success: true,
-                data: {
-                    workspace: workspace,
-                    folder: folder,
-                    note: note,
-                    task: task,
-                },
-                role: "owner",
-            });
-        }
-
-        const member = await MemberModel.findOne({
-            workspaceId: workspaceId,
-            userId: userId,
-        });
-        if (!member) {
-            return res.json({
-                success: false,
-                message: "Access denied",
-            });
-        }
-
-        res.json({
+        return res.json({
             success: true,
             data: {
-                workspace: workspace,
-                folder: folder,
-                note: note,
-                task: task,
+                tasks,
+                total,
+                totalPages: Math.ceil(total / limitNum),
+                page: pageNum,
             },
-            role: member.permission,
         });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            mesage: "Server error",
-            error: error.message,
-        });
+        console.error('getLazyWorkspace error:', error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 }
