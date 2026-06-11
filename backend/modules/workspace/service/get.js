@@ -29,16 +29,16 @@ export async function getLazyWorkspace(req, res) {
     try {
         const userId = req.user.userId;
         const { workspaceId } = req.params;
-        const { 
-            page = 1, 
-            limit = 10, 
+        const {
+            page = 1,
+            limit = 10,
             sortBy = 'newest',
             priority,
             status,
-            category,
-            search 
+            search
         } = req.query;
 
+        // ✅ Filter
         const filter = {
             createdBy: userId,
             workspaceId,
@@ -46,7 +46,7 @@ export async function getLazyWorkspace(req, res) {
 
         if (priority && priority !== 'all') filter.priority = priority;
         if (status && status !== 'all') filter.status = status;
-        
+
         if (search) {
             filter.$or = [
                 { title: { $regex: search, $options: 'i' } },
@@ -54,14 +54,17 @@ export async function getLazyWorkspace(req, res) {
             ];
         }
 
+        // ✅ Sort
         let sort = {};
         switch (sortBy) {
             case 'newest': sort = { createdAt: -1 }; break;
             case 'oldest': sort = { createdAt: 1 }; break;
             case 'priority': sort = { priority: 1 }; break;
             case 'deadline': sort = { endAt: 1 }; break;
-            default: sort = { order: 1, createdAt: -1 };
+            default: sort = { createdAt: -1 };
         }
+
+        // ✅ Pagination
         const pageNum = Math.max(1, parseInt(page, 10));
         const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
         const skip = (pageNum - 1) * limitNum;
@@ -81,7 +84,24 @@ export async function getLazyWorkspace(req, res) {
             },
         });
     } catch (error) {
-        console.error('getLazyWorkspace error:', error);
+        console.error('❌ getLazyWorkspace error:', error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+export async function getLazyAllWorkspace(req, res) {
+    try {
+        const userId = req.user.userId;
+
+        const [tasks] = await Promise.all([
+            Task.find({createdBy: userId}).lean().sort({ createdAt: -1 })
+        ]);
+
+        return res.json({
+            success: true,
+            tasks,
+        });
+    } catch (error) {
+        console.error('getLazyAllWorkspace error:', error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 }
