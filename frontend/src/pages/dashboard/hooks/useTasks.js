@@ -16,23 +16,20 @@ export function useTasks(selectedWorkspace) {
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // ✅ fetchParams-д бүх параметр багтсан
+    // ✅ Бүх параметрийг оруулсан
     const fetchParams = useMemo(() => {
         return {
-            workspaceId: selectedWorkspace,
             page: currentPage,
             limit: pageSize,
             sortBy: sortOption,
             priority: filters.priority,
             status: filters.status,
-            category: filters.category,
             search: searchQuery,
         };
-    }, [selectedWorkspace, currentPage, pageSize, sortOption, filters, searchQuery]);
+    }, [currentPage, pageSize, sortOption, filters, searchQuery]);
 
-    // ✅ loadTasks-ийг useCallback-ээр wrap хийх
     const loadTasks = useCallback(async () => {
-        if (!selectedWorkspace) {
+        if (!selectedWorkspace || selectedWorkspace === 'all') {
             setTasks([]);
             setTotalTasks(0);
             return;
@@ -43,23 +40,18 @@ export function useTasks(selectedWorkspace) {
 
             const params = new URLSearchParams();
             Object.entries(fetchParams).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== '') {
+                if (value !== undefined && value !== null && value !== '' && value !== 'all') {
                     params.append(key, value);
                 }
             });
 
-            // ✅ Console.log нэмэх - request-д юу явагдаж байгааг харах
-            console.log('📤 Fetching tasks with params:', params.toString());
-            console.log('📤 Full URL:', `/workspace/getlazy/${selectedWorkspace}?${params.toString()}`);
-
             const res = await api.get(`/workspace/getlazy/${selectedWorkspace}?${params.toString()}`);
-
             if (res.data.success) {
                 setTasks(res.data.data.tasks || []);
                 setTotalTasks(res.data.data.total || 0);
             }
         } catch (err) {
-            console.error('Tasks авахад алдаа:', err);
+            console.error('❌ Tasks авахад алдаа:', err);
             setTasks([]);
             setTotalTasks(0);
         } finally {
@@ -67,35 +59,26 @@ export function useTasks(selectedWorkspace) {
         }
     }, [selectedWorkspace, fetchParams]);
 
-    // ✅ fetchParams өөрчлөгдөхөд дахин ачаалах
     useEffect(() => {
         loadTasks();
     }, [loadTasks]);
 
-    // ✅ Filter өөрчлөх → page 1 рүү буцах
     const setFilter = (key, value) => {
-        console.log(`🔍 Filter changed: ${key} = ${value}`);
         setFilters(prev => ({ ...prev, [key]: value }));
         setCurrentPage(1);
     };
 
-    // ✅ Sort өөрчлөх → page 1 рүү буцах
     const changeSortOption = (value) => {
-        console.log(`📊 Sort changed: ${value}`);
         setSortOption(value);
         setCurrentPage(1);
     };
 
-    // ✅ Page size өөрчлөх → page 1 рүү буцах
     const changePageSize = (value) => {
-        console.log(`📄 Page size changed: ${value}`);
         setPageSize(value);
         setCurrentPage(1);
     };
 
-    // ✅ Search өөрчлөх → page 1 рүү буцах
     const changeSearchQuery = (value) => {
-        console.log(` Search changed: ${value}`);
         setSearchQuery(value);
         setCurrentPage(1);
     };
@@ -103,7 +86,7 @@ export function useTasks(selectedWorkspace) {
     const saveTask = async (data) => {
         try {
             if (data._id) {
-                await api.patch(`/task/update/${data._id}?workspaceId=${selectedWorkspace}`, data);
+                await api.patch(`/task/update/${data._id}`, data);
             } else {
                 await api.post(`/task/create?workspaceId=${selectedWorkspace}`, data);
             }
@@ -139,17 +122,49 @@ export function useTasks(selectedWorkspace) {
         filters,
         searchQuery,
         loading,
-        setSearchQuery: changeSearchQuery,  // ✅ Wrapper функц
+        setSearchQuery: changeSearchQuery,
         setFilter,
         sortOption,
-        setSortOption: changeSortOption,    // ✅ Wrapper функц
+        setSortOption: changeSortOption,
         pageSize,
-        setPageSize: changePageSize,        // ✅ Wrapper функц
+        setPageSize: changePageSize,
         currentPage,
         setCurrentPage,
         totalPages,
         saveTask,
         deleteTask,
         reloadTasks: loadTasks,
+    };
+}
+
+export function useOverviewTasks() {
+    const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const loadAllTasks = useCallback(async () => {
+        try {
+            setLoading(true);
+            const res = await api.get('/workspace/getlazyall');
+            
+            if (res.data.success) {
+                // ✅ Backend response бүтцийг тохируулах
+                setTasks(res.data.data?.tasks || res.data.tasks || []);
+            }
+        } catch (err) {
+            console.error('❌ Overview tasks авахад алдаа:', err);
+            setTasks([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadAllTasks();
+    }, [loadAllTasks]);
+
+    return {
+        tasks,
+        loading,
+        reloadTasks: loadAllTasks,
     };
 }
