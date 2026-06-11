@@ -15,7 +15,6 @@ export async function patchWorkspace(req, res) {
             {
                 _id: workspaceId,
                 ownerId: userId,
-                isDeleted: false,
             },
             {
                 $set: updateData,
