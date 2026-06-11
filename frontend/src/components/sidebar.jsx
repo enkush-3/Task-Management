@@ -9,7 +9,6 @@ export default function Sidebar({
   user
 }) {
   return (
-    // ✅ Fixed биш — flex container-ийн full-height хүүхэд
     <aside className="h-screen bg-slate-900 text-slate-300 flex flex-col">
       {/* Logo */}
       <div className="p-4 border-b border-slate-800">
