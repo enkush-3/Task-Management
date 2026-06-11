@@ -4,15 +4,23 @@ import Task from "../model.js";
 export async function updateTask(req, res) {
     try {
         const { userId } = req.user;
-        const { workspaceId } = req.query;
         const { taskId } = req.params;
         const updateData = req.body;
 
-        if (!taskId || !workspaceId) {
+        if (!taskId) {
             return res.status(400).json({
-                message: "Missing taskId or workspaceId",
+                message: "Missing taskId",
             });
         }
+
+        const { 
+            _id,             
+            createdBy,       
+            workspaceId,     
+            createdAt,       
+            __v,             
+            ...safeUpdateData
+        } = updateData;
 
         const updatedTask = await Task.findOneAndUpdate(
             {
@@ -21,7 +29,7 @@ export async function updateTask(req, res) {
             },
             {
                 $set: {
-                    ...updateData,
+                    ...safeUpdateData,
                     updatedAt: new Date(),
                 },
             },
