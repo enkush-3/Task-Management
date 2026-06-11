@@ -211,44 +211,6 @@ export default function TopBar({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                    <select
-                        value={pageSize}
-                        onChange={e => setPageSize(Number(e.target.value))}
-                        className="text-sm bg-primary-50 border border-primary-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    >
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                    </select>
-                    
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-primary-500 hover:bg-primary-50 disabled:opacity-50"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        
-                        <span className="text-sm text-primary-600">
-                            {currentPage} / {totalPages}
-                        </span>
-                        
-                        <button
-                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                            disabled={currentPage === totalPages}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-primary-500 hover:bg-primary-50 disabled:opacity-50"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
                 <button
                     onClick={onNewTask}
                     disabled={!canCreateTask}
