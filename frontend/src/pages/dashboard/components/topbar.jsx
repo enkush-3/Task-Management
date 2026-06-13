@@ -11,11 +11,6 @@ export default function TopBar({
     canCreateTask,
     sortOption,
     setSortOption,
-    pageSize,
-    setPageSize,
-    currentPage,
-    totalPages,
-    setCurrentPage,
     filters,
     setFilter,
 }) {
@@ -64,7 +59,7 @@ export default function TopBar({
                     </div>
 
                     <div className="flex bg-primary-50 border border-primary-200 rounded-lg p-1">
-                        {['list', 'board'].map(mode => (
+                        {['Жагсаалт', 'Самбар'].map(mode => (
                             <button
                                 key={mode}
                                 onClick={() => onViewModeChange(mode)}
@@ -100,7 +95,7 @@ export default function TopBar({
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                             </svg>
-                            <span>Filter</span>
+                            <span>Шүүх</span>
                             {filterOpen && (
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -115,7 +110,7 @@ export default function TopBar({
                             >
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs font-medium text-primary-900 mb-1.5">Priority</p>
+                                        <p className="text-xs font-medium text-primary-900 mb-1.5">Чухал</p>
                                         <select
                                             value={filters.priority}
                                             onChange={e => {
@@ -132,7 +127,7 @@ export default function TopBar({
                                     </div>
 
                                     <div>
-                                        <p className="text-xs font-medium text-primary-900 mb-1.5">Status</p>
+                                        <p className="text-xs font-medium text-primary-900 mb-1.5">Төлөв</p>
                                         <select
                                             value={filters.status}
                                             onChange={e => {
@@ -169,7 +164,7 @@ export default function TopBar({
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4V18" />
                             </svg>
-                            <span>Sort</span>
+                            <span>Эрэмбэлэх</span>
                             {sortOpen && (
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
