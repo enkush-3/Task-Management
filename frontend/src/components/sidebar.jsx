@@ -4,13 +4,12 @@ export default function Sidebar({
   onSelectWorkspace,
   onNewWorkspace,
   onEditWorkspace,
-  onDeleteWorkspace,
+  onRequestDeleteWorkspace,
   onLogout,
   user
 }) {
   return (
-    <aside className="h-screen bg-slate-900 text-slate-300 flex flex-col">
-      {/* Logo */}
+    <aside className="h-screen bg-primary-800 text-slate-300 flex flex-col">
       <div className="p-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20 flex-shrink-0">
@@ -23,7 +22,6 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* New Workspace Button */}
       <div className="p-3">
         <button
           onClick={onNewWorkspace}
@@ -32,14 +30,13 @@ export default function Sidebar({
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span className="truncate">Шинэ Workspace</span>
+          <span className="truncate">Шинэ төсөл</span>
         </button>
       </div>
 
-      {/* Workspaces List */}
       <div className="flex-1 overflow-y-auto px-2">
         <div className="px-3 py-2 text-xs font-semibold text-primary-400 uppercase tracking-wider">
-          Workspaces
+          Төсөлүүд
         </div>
         
         <button
@@ -87,7 +84,7 @@ export default function Sidebar({
                   </svg>
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onDeleteWorkspace(workspace._id); }}
+                  onClick={(e) => { e.stopPropagation(); onRequestDeleteWorkspace(workspace._id, workspace.title); ; }}
                   className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded transition"
                   title="Устгах"
                 >
@@ -107,7 +104,6 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* User Profile & Logout */}
       <div className="p-3 border-t border-slate-800 bg-slate-900/50">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0 ring-2 ring-slate-800">
@@ -115,7 +111,7 @@ export default function Sidebar({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-white font-medium truncate">
-              {user?.fullname || user?.username || 'User'}
+              {user?.fullname || user?.username}
             </p>
             <p className="text-xs text-primary-400/80 truncate">
               {user?.email || ''}
