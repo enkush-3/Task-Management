@@ -58,10 +58,7 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
 
     return (
         <div className="space-y-6 mb-6">
-            
-            {/* ✅ 1. WORKSPACE HEADER */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-8 text-white shadow-2xl">
-                {/* Background decorations */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
                 <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2" />
@@ -75,12 +72,12 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                                 </svg>
                             </div>
                             <div>
-                                <h2 className="text-3xl font-bold tracking-tight">Бүх Workspace</h2>
+                                <h2 className="text-3xl font-bold tracking-tight">Бүх төслүүд</h2>
                                 <p className="text-primary-200 text-sm mt-1 flex items-center gap-2">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
-                                    {workspaces?.length || 0} workspace
+                                    {workspaces?.length || 0} төсөл
                                     <span className="mx-2">·</span>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -91,7 +88,6 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                         </div>
                     </div>
 
-                    {/* Workspace chips */}
                     <div className="flex flex-wrap gap-2 mb-6">
                         {workspaces?.slice(0, 5).map(ws => (
                             <div 
@@ -113,7 +109,6 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                         )}
                     </div>
 
-                    {/* Completion Progress */}
                     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
@@ -134,7 +129,6 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                 </div>
             </div>
 
-            {/* ✅ 2. STATS CARDS */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard
                     icon={
@@ -178,10 +172,7 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                 />
             </div>
 
-            {/* ✅ 3. DUE TODAY + HIGH PRIORITY */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                
-                {/* Due Today */}
                 <div className="bg-white rounded-2xl border border-primary-200 p-6 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-3">
@@ -228,7 +219,6 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                     )}
                 </div>
 
-                {/* High Priority */}
                 <div className="bg-white rounded-2xl border border-primary-200 p-6 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-3">
@@ -238,7 +228,7 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                                 </svg>
                             </div>
                             <h3 className="text-lg font-bold text-primary-900">
-                                High Priority
+                                Чухал
                             </h3>
                         </div>
                         <span className="text-xs font-semibold bg-red-100 text-red-700 px-3 py-1.5 rounded-full">
@@ -276,9 +266,8 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
                 </div>
             </div>
 
-            {/* ✅ 4. OVERDUE ALERT */}
             {stats.overdue.length > 0 && (
-                <div className="bg-gradient-to-r from-red-50 to-orange-50 border-3 border-red-200 rounded-2xl p-6 shadow-sm">
+                <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl p-6 shadow-sm">
                     <div className="flex items-start gap-4">
                         <div className="flex-1">
                             <h4 className="font-bold text-red-900 text-lg mb-1">
@@ -307,8 +296,6 @@ export default function DashboardOverview({ tasks, workspaces, onTaskClick }) {
         </div>
     );
 }
-
-// ✅ StatCard component
 function StatCard({ icon, label, value, color }) {
     const colorClasses = {
         primary: {
@@ -351,8 +338,6 @@ function StatCard({ icon, label, value, color }) {
         </div>
     );
 }
-
-// ✅ TaskMiniCard component
 function TaskMiniCard({ task, onClick }) {
     const statusColors = {
         'To do': 'bg-slate-100 text-slate-700',
