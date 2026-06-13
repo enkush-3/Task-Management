@@ -1,7 +1,9 @@
 import express from "express";
 import mongoose from "mongoose";
 import router from "./routers.js";
-import dotenv from "dotenv"
+import dotenv from 'dotenv';
+dotenv.config({ quiet: true });
+
 import cors from "cors"
 import http from "http"
 
