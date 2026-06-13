@@ -19,8 +19,6 @@ export function useTasks(selectedWorkspace) {
     // ✅ Бүх параметрийг оруулсан
     const fetchParams = useMemo(() => {
         return {
-            page: currentPage,
-            limit: pageSize,
             sortBy: sortOption,
             priority: filters.priority,
             status: filters.status,
