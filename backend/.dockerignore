@@ -1,7 +1,5 @@
 node_modules
 npm-debug.log
-dist
-build
 .env
 .env.local
 .git
@@ -10,6 +8,7 @@ README.md
 .vscode
 .idea
 coverage
+.nyc_output
 *.log
 .DS_Store
-Demo-images
+dist
