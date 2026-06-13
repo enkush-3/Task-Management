@@ -30,15 +30,11 @@ export async function getLazyWorkspace(req, res) {
         const userId = req.user.userId;
         const { workspaceId } = req.params;
         const {
-            page = 1,
-            limit = 10,
             sortBy = 'newest',
             priority,
             status,
             search
         } = req.query;
-
-        // ✅ Filter
         const filter = {
             createdBy: userId,
             workspaceId,
@@ -53,8 +49,6 @@ export async function getLazyWorkspace(req, res) {
                 { description: { $regex: search, $options: 'i' } }
             ];
         }
-
-        // ✅ Sort
         let sort = {};
         switch (sortBy) {
             case 'newest': sort = { createdAt: -1 }; break;
@@ -64,13 +58,9 @@ export async function getLazyWorkspace(req, res) {
             default: sort = { createdAt: -1 };
         }
 
-        // ✅ Pagination
-        const pageNum = Math.max(1, parseInt(page, 10));
-        const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
-        const skip = (pageNum - 1) * limitNum;
 
         const [tasks, total] = await Promise.all([
-            Task.find(filter).lean().sort(sort).skip(skip).limit(limitNum),
+            Task.find(filter).lean().sort(sort),
             Task.countDocuments(filter)
         ]);
 
@@ -79,8 +69,6 @@ export async function getLazyWorkspace(req, res) {
             data: {
                 tasks,
                 total,
-                totalPages: Math.ceil(total / limitNum),
-                page: pageNum,
             },
         });
     } catch (error) {
