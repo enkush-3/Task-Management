@@ -1,28 +1,110 @@
-# Dependencies
-node_modules/
 
-# Environment
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.local
 
-# Build
 dist/
 build/
+**/dist/
+**/build/
+*.tsbuildinfo
 
-# Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+yarn-integrity
 
-# Editor
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
 .idea/
+*.iws
+*.iml
+*.ipr
 
-# OS files
+*.swp
+*.swo
+*~
+.tags
+
+*.sublime-project
+*.sublime-workspace
+
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon
+
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
 
-# Database
+*~
+.directory
+.Trash-*
+
+
+data/
 data/db/
+mongo-data/
+*.sqlite
+*.sqlite3
 
-# Coverage
 coverage/
+.nyc_output/
+*.lcov
+.jest/
+test-results/
+
+.cache/
+.temp/
+tmp/
+temp/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tgz
+*.zip
+*.tar.gz
+
+.pnpm-store/
+.yarn/
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+.vercel
+.netlify
+.heroku
+.fly
+
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+secrets/
+credentials/
