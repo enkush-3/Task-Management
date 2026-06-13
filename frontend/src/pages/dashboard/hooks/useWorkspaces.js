@@ -41,7 +41,6 @@ export function useWorkspaces() {
     };
 
     const deleteWorkspace = async (workspaceId) => {
-        console.log('Workspace устгах:', workspaceId);
         try {
             await api.delete(`/workspace/hard/${workspaceId}`);
             await loadWorkspaces();
