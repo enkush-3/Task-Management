@@ -15,9 +15,7 @@ export function useWorkspaces() {
             const data = res.data.data || [];
             setWorkspaces(data);
 
-            if (!selectedWorkspace && data.length > 0) {
-                setSelectedWorkspace(data[0]._id);
-            }
+            setSelectedWorkspace("all");
         } catch (err) {
             console.error('Workspaces авахад алдаа:', err);
         } finally {
