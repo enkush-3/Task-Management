@@ -13,6 +13,7 @@ import WelcomeState from './components/welcomestate';
 import DashboardOverview from './components/overview';
 import { useWorkspaces } from './hooks/useWorkspaces';
 import { useTasks , useOverviewTasks} from './hooks/useTasks';
+import ConfirmModal from "../../components/confirmmodal.jsx";
 
 const SIDEBAR_MIN = 240;
 const SIDEBAR_MAX = 400;
@@ -25,7 +26,7 @@ export default function Dashboard() {
     const taskHook = useTasks(workspaceHook.selectedWorkspace);
     const overviewHook = useOverviewTasks();
 
-    const [viewMode, setViewMode] = useState('list');
+    const [viewMode, setViewMode] = useState('Жагсаалт');
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
 
@@ -102,6 +103,41 @@ export default function Dashboard() {
         else overviewHook.reloadTasks();
     };
 
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        type: null,
+        itemId: null,
+        itemName: ''
+    });
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const openDeleteModal = (type, id, name = '') => {
+        setDeleteModal({ isOpen: true, type, itemId: id, itemName: name });
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({ isOpen: false, type: null, itemId: null, itemName: '' });
+    };
+
+    const handleConfirmDelete = async () => {
+        setIsDeleting(true);
+        try {
+            if (deleteModal.type === 'task') {
+                await taskHook.deleteTask(deleteModal.itemId);
+                overviewHook.reloadTasks();
+            } else if (deleteModal.type === 'workspace') {
+                await workspaceHook.deleteWorkspace(deleteModal.itemId);
+                overviewHook.reloadTasks();
+            }
+            closeDeleteModal();
+        } catch (error) {
+            console.error('❌ Устгахад алдаа гарлаа:', error);
+            alert('Устгах үйлдэл амжилтгүй боллоо.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const currentWorkspace = workspaceHook.workspaces.find(w => w._id === workspaceHook.selectedWorkspace);
     const pageTitle = currentWorkspace?.title || 'Бүх Tasks';
 
@@ -117,7 +153,7 @@ export default function Dashboard() {
                     onSelectWorkspace={workspaceHook.setSelectedWorkspace}
                     onNewWorkspace={workspaceHook.openCreateModal}
                     onEditWorkspace={workspaceHook.openEditModal}
-                    onDeleteWorkspace={workspaceHook.deleteWorkspace}
+                    onRequestDeleteWorkspace={(id, name) => openDeleteModal('workspace', id, name)}
                     onLogout={handleLogout}
                     user={user}
                 />
@@ -138,22 +174,21 @@ export default function Dashboard() {
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <div className="flex-1 overflow-y-auto">
                     
-                    {workspaceHook.workspaces.length === 0 ? (
-                        <WelcomeState onCreateWorkspace={workspaceHook.openCreateModal} />
-                    ) : !workspaceHook.selectedWorkspace ? (
-                        <div className="flex items-center justify-center h-full text-primary-400 font-medium">
-                            Workspace сонгоно уу
-                        </div>
-                    ) : workspaceHook.selectedWorkspace === 'all' ? (
-                        
+                    {workspaceHook.selectedWorkspace === 'all' ? (
                         <div className="p-8">
-                            <DashboardOverview 
+                            <DashboardOverview
                                 tasks={overviewHook.tasks}
                                 workspaces={workspaceHook.workspaces}
                                 onTaskClick={handleEditTask}
                             />
                         </div>
 
+                    ):workspaceHook.workspaces.length === 0 ? (
+                        <WelcomeState onCreateWorkspace={workspaceHook.openCreateModal} />
+                    ) : !workspaceHook.selectedWorkspace ? (
+                        <div className="flex items-center justify-center h-full text-primary-400 font-medium">
+                            Workspace сонгоно уу
+                        </div>
                     ) : (
                         <>
                             <div className="sticky top-0 z-10 bg-primary-50/80 backdrop-blur-md border-b border-primary-100">
@@ -168,11 +203,6 @@ export default function Dashboard() {
                                     canCreateTask={workspaceHook.workspaces.length > 0}
                                     sortOption={taskHook.sortOption}
                                     setSortOption={taskHook.setSortOption}
-                                    pageSize={taskHook.pageSize}
-                                    setPageSize={taskHook.setPageSize}
-                                    currentPage={taskHook.currentPage}
-                                    totalPages={taskHook.totalPages}
-                                    setCurrentPage={taskHook.setCurrentPage}
                                     filters={taskHook.filters}
                                     setFilter={taskHook.setFilter}
                                 />
@@ -190,14 +220,14 @@ export default function Dashboard() {
                                     <EmptyState hasSearch={!!taskHook.searchQuery} />
                                 ) : (
                                     <>
-                                        {viewMode === 'list' && (
+                                        {viewMode === 'Жагсаалт' && (
                                             <TaskTable 
                                                 tasks={taskHook.tasks}
                                                 onEdit={handleEditTask}
-                                                onDelete={taskHook.deleteTask}
+                                                onRequestDelete={(id, name) => openDeleteModal('task', id, name)}
                                             />
                                         )}
-                                        {viewMode === 'board' && (
+                                        {viewMode === 'Самбар' && (
                                             <BoardView 
                                                 tasks={taskHook.tasks} 
                                                 onTaskClick={handleEditTask} 
@@ -222,7 +252,22 @@ export default function Dashboard() {
                 onClose={handleCloseTaskModal} 
                 onSave={handleSaveTask} 
                 initialData={editingTask} 
-                selectedWorkspace={workspaceHook.selectedWorkspace} 
+                selectedWorkspace={workspaceHook.selectedWorkspace}
+                workspaces={workspaceHook.workspaces}
+            />
+            <ConfirmModal
+                isOpen={deleteModal.isOpen}
+                onClose={closeDeleteModal}
+                onConfirm={handleConfirmDelete}
+                isLoading={isDeleting}
+                title={deleteModal.type === 'workspace' ? 'Workspace устгах' : 'Task устгах'}
+                message={
+                    deleteModal.type === 'workspace'
+                        ? `"${deleteModal.itemName}" workspace болон түүнд хамаарах бүх task-ууд бүрмөсөн устна. Энэ үйлдлийг буцаах боломжгүй.`
+                        : `"${deleteModal.itemName}" task-ыг устгахдаа итгэлтэй байна уу?`
+                }
+                confirmText="Тийм, устгах"
+                cancelText="Үгүй, цуцлах"
             />
         </div>
     );
