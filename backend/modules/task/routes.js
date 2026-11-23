@@ -6,8 +6,8 @@ import { updateTask } from "./service/patch.js"
 import { hardDeleteTask } from "./service/delete.js";
 const taskRouter = Router();
 
-taskRouter.use("/create", Auth, createTask);
-taskRouter.use("/update/:taskId", Auth, updateTask);
-taskRouter.use("/:taskId", Auth, hardDeleteTask);
+taskRouter.post("/create", Auth, createTask);
+taskRouter.patch("/update/:taskId", Auth, updateTask);
+taskRouter.delete("/:taskId", Auth, hardDeleteTask);
 
 export default taskRouter;

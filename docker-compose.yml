@@ -27,7 +27,7 @@ services:
     environment:
       PORT: 3000
       MONGODB_URI: mongodb://mongodb:27017/taskdb
-      JWT_SECRET: ${JWT_SECRET:-085ba2f0c8e3cbdf1ad0f49c5fe9863ed1f72137771c5b2dda92ca5feeac88c5}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to a random secret of at least 32 characters}
       CLIENT_URL: http://localhost:8080
       NODE_ENV: production
     ports:

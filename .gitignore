@@ -1,7 +1,4 @@
-
 node_modules/
-
-.env
 
 dist/
 build/
@@ -11,3 +8,6 @@ logs/
 .vscode/
 
 .idea/
+.env*
+!**/.env.example
+.vercel/

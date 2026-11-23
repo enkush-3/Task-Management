@@ -383,6 +383,38 @@ npm run dev
 
 ## 🔧 Troubleshooting
 
+### Vercel deployment
+
+The repository root is a Node 24 npm workspace. Run `npm ci`, `npm test`, and
+`npm run build` from the root. Vercel uses `vercel.json` to serve `frontend/dist`
+and sends `/api/*` to the shared Express function in `api/index.js`.
+
+Configure these server environment variables in Vercel before deployment:
+
+| Variable | Value |
+|----------|-------|
+| `MONGODB_URI` | A MongoDB Atlas connection string with an application database and dedicated database user |
+| `JWT_SECRET` | A newly generated random secret of at least 32 characters |
+| `CLIENT_URL` | `https://task.enkush.site` |
+| `NODE_ENV` | `production` |
+
+Keep credentials in the provider environment settings. Never commit `.env`
+files or expose server secrets through `VITE_*` variables. `/api/health` returns
+HTTP 200 only when signing configuration and a MongoDB connection are available.
+
+For local development, copy `backend/.env.example` to `backend/.env`, replace the
+JWT placeholder, run `npm start` at the root, and run `npm run dev --workspace
+frontend` in another terminal. Vite proxies `/api` to the local backend. An
+optional `VITE_API_URL` overrides the frontend API URL for separate hosts.
+
+The standalone backend starts with `backend/server.js` and retains Socket.IO.
+The deployed frontend uses REST; the Vercel function does not start a persistent
+Socket.IO server. Docker Compose also requires a `JWT_SECRET` environment value.
+
+To attach the production hostname, add `task.enkush.site` to this Vercel project
+and apply its recommended DNS record at the authoritative DNS provider. Preserve
+the domain's other DNS records.
+
 ### ❌ Port 27017 аль хэдийн ашиглагдаж байна
 
 ```bash

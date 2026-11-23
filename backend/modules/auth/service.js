@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 export async function Login(req, res) {
     const { loginId, password } = req.body;
 
-    if (!loginId || !password) {
+    if (![loginId, password].every(value => typeof value === "string" && value.trim())) {
         return res.status(400).json({
             message: "Missing credentials",
         });
@@ -46,7 +46,7 @@ export async function Login(req, res) {
 export async function Register(req, res) {
     const { fullname, username, email, password } = req.body;
 
-    if (!fullname || !username || !email || !password) {
+    if (![fullname, username, email, password].every(value => typeof value === "string" && value.trim())) {
         return res.status(400).json({
             message: "Missing credentials",
         });

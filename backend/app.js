@@ -1,58 +1,49 @@
 import express from "express";
-import mongoose from "mongoose";
 import router from "./routers.js";
-import dotenv from 'dotenv';
-dotenv.config({ quiet: true });
+import cors from "cors";
+import { connectDatabase } from "./database.js";
 
-import cors from "cors"
-import http from "http"
-
-import { Server } from "socket.io";
-import { socketAuth } from "./middleware/Authorization.js";
-
-dotenv.config();
 const app = express();
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173,http://localhost:8080")
+    .split(",").map((origin) => origin.trim()).filter(Boolean);
 
-const server = http.createServer(app);
+app.disable("x-powered-by");
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(express.json({ limit: "100kb" }));
+app.use(express.urlencoded({ extended: false, limit: "100kb" }));
+app.use("/api", (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+});
 
-const allowedOrigins = process.env.CLIENT_URL
-    ? process.env.CLIENT_URL.split(',')
-    : ['http://localhost:5173', 'http://localhost:8080'];
+app.use("/api", async (_req, res, next) => {
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+        return res.status(503).json({ success: false, message: "Service is not configured" });
+    }
 
-const io = new Server(server, {
-    cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST", "DELETE", "PATCH"],
-        credentials: true
+    try {
+        await connectDatabase();
+        next();
+    } catch {
+        res.status(503).json({ success: false, message: "Database is temporarily unavailable" });
     }
 });
 
-const PORT = 3000;
+app.get("/api/health", (_req, res) => {
+    res.json({ success: true, status: "ok", database: "connected" });
+});
+app.use("/api", router);
+app.use((_req, res) => {
+    res.status(404).json({ success: false, message: "API route not found" });
+});
+app.use((error, _req, res, _next) => {
+    const status = error.status === 413 ? 413
+        : error.type === "entity.parse.failed" || error.name === "ValidationError" || error.name === "CastError" ? 400
+        : error.code === 11000 ? 409 : 500;
+    const message = status === 413 ? "Request body is too large"
+        : status === 400 ? "Invalid request"
+        : status === 409 ? "Username or email is already used" : "Server error";
+    res.status(status).json({ success: false, message });
+});
 
-app.set("io", io); 
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: allowedOrigins, credentials: true }));
-
-io.use(socketAuth);
-
-
-async function connectDB() {
-    try {
-        const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/taskdb";
-        await mongoose.connect(mongoUri);
-        console.log("✅ Mongodb connected");
-    } catch (err) {
-        console.error("❌ MongoDB connection error:", err);
-        process.exit(1);
-    }
-}
-
-async function startServer() {
-    await connectDB();
-    app.use("/api", router);
-    server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-}
-
-startServer();
+export default app;
